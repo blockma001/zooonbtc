@@ -1,0 +1,105 @@
+var commonUtil = {
+  /**
+   * 弹出消息框
+   * @param msg 消息内容
+   * @param type 消息框类型（参考bootstrap的alert）
+   */
+  alert: function(msg, type){
+    let alertType;
+    let cancelType;
+    let iconType;
+    if(typeof(type) =="undefined") { // 未传入type则默认为success类型的消息框
+      type = "success";
+    }
+    switch (type){
+      case "success":
+        alertType = 'success';
+        cancelType = 'greencross';
+        iconType = '<i class="start-icon far fa-check-circle faa-tada animated"></i>';
+        break;
+      case "warning":
+        alertType = 'warning';
+        cancelType = 'warning';
+        iconType = '<i class="start-icon fa fa-exclamation-triangle faa-flash animated"></i>';
+        break;
+      case "danger":
+        alertType = 'danger';
+        cancelType = 'danger';
+        iconType = '<i class="start-icon far fa-times-circle faa-pulse animated"></i>';
+        break;
+    }
+
+    // 创建bootstrap的alert元素
+    var divElement = $("<div class='alert fade alert-simple show'></div>").addClass('alert-'+alertType).addClass('alterButton');
+    divElement.css({ // 消息框的定位样式
+      "position": "absolute",
+      "top": "80px"
+    });
+
+    // 消息框添加可以关闭按钮
+    var closeBtn = $('<button type="button" class="close font__size-18" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">' +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <i class="fa fa-times '+cancelType+'"></i>' +
+        '</span><span class="sr-only">Close</span></button>'
+        +iconType);
+    $(divElement).append(closeBtn);
+
+    divElement.append(msg); // 设置消息框的内容
+
+    // 消息框放入到页面中
+    $('body').append(divElement);
+    return divElement;
+  },
+
+  /**
+   * 短暂显示后上浮消失的消息框
+   * @param msg 消息内容
+   * @param type 消息框类型
+   */
+  message: function(msg, type) {
+    var divElement = commonUtil.alert(msg, type); // 生成Alert消息框
+    var isIn = false; // 鼠标是否在消息框中
+
+    divElement.on({ // 在setTimeout执行之前先判定鼠标是否在消息框中
+      mouseover : function(){isIn = true;},
+      mouseout  : function(){isIn = false;}
+    });
+
+    // 短暂延时后上浮消失
+    setTimeout(function() {
+      var IntervalMS = 20; // 每次上浮的间隔毫秒
+      var floatSpace = 60; // 上浮的空间(px)
+      var nowTop = divElement.offset().top; // 获取元素当前的top值
+      var stopTop = nowTop - floatSpace;    // 上浮停止时的top值
+      divElement.fadeOut(IntervalMS * floatSpace); // 设置元素淡出
+
+      var upFloat = setInterval(function(){ // 开始上浮
+        if (nowTop >= stopTop) { // 判断当前消息框top是否还在可上升的范围内
+          divElement.css({"top": nowTop--}); // 消息框的top上升1px
+        } else {
+          clearInterval(upFloat); // 关闭上浮
+          divElement.remove();    // 移除元素
+        }
+      }, IntervalMS);
+
+      if (isIn) { // 如果鼠标在setTimeout之前已经放在的消息框中，则停止上浮
+        clearInterval(upFloat);
+        divElement.stop();
+      }
+
+      divElement.hover(function() { // 鼠标悬浮时停止上浮和淡出效果，过后恢复
+        clearInterval(upFloat);
+        divElement.stop();
+      },function() {
+        divElement.fadeOut(IntervalMS * (nowTop - stopTop)); // 这里设置元素淡出的时间应该为：间隔毫秒*剩余可以上浮空间
+        upFloat = setInterval(function(){ // 继续上浮
+          if (nowTop >= stopTop) {
+            divElement.css({"top": nowTop--});
+          } else {
+            clearInterval(upFloat); // 关闭上浮
+            divElement.remove();    // 移除元素
+          }
+        }, IntervalMS);
+      });
+    }, 1500);
+  }
+}

@@ -1,13 +1,14 @@
 
 // const baseUrl = 'https://btczoo.co';
-const baseUrl = 'http://124.221.133.213:8099';
+// const baseUrl = 'http://124.221.133.213:8099';
+const baseUrl = 'http://43.228.125.144:8099';
 // const baseUrl = 'http://localhost:8099';
 const demoUrlStr = baseUrl+'/ttt/syDemo';
 const projectUrlStr = baseUrl+'/ttt/syPro';
 
 const connectButton = document.getElementById("connectBtn")
 const mintButton1 = document.getElementById("mintBtn")
-mintButton1.onclick = mint
+mintButton1.onclick = checkEnable
 connectButton.onclick = connect
 
 let userName = '';
@@ -177,7 +178,33 @@ function getPayAddress(){
   var randomIndex = Math.floor(Math.random() * array.length);
   return array[randomIndex];
 }
-       
+
+function checkEnable() {
+  $.ajax({
+    url: demoUrlStr + '/getEnable',
+    type: 'GET',
+    dataType: 'json',
+    contentType: 'application/json',
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'ttToken': myEncrypt()
+    },
+    success: function (resultRes) {
+      if (resultRes.code === 0 && resultRes.data.enable === true) {
+          mint();
+      } else {
+        toastrText = 'Purchase time has not yet arrived.';
+        toastrType = 'danger';
+        commonUtil.message(toastrText, toastrType);
+
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.log(666666);
+    }
+  });
+}
+
 async function mint() {
 
   try {

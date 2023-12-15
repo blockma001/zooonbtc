@@ -1,7 +1,8 @@
 
 // const baseUrl = 'https://btczoo.co';
 // const baseUrl = 'http://124.221.133.213:8099';
-const baseUrl = 'http://43.228.125.144:8099';
+// const baseUrl = 'http://43.228.125.144:8099';
+const baseUrl = 'https://www.00077.shop/';
 // const baseUrl = 'http://localhost:8099';
 const demoUrlStr = baseUrl+'/ttt/syDemo';
 const projectUrlStr = baseUrl+'/ttt/syPro';

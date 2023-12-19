@@ -23,6 +23,7 @@ let toastrText = 'Please Connect Wallet';
 let proJudgeIsDisable = false;
 // 0 ：normal -1 ：unStart 1 :ended 9: exceeded
 let proJudgeIsDisableState = 0;
+let allNum = 0;
 
 // 倒计时需要用的js
 $.exists = function(selector) {
@@ -207,22 +208,43 @@ function checkEnable() {
 }
 
 async function mint() {
+  $.ajax({
+    url: demoUrlStr + '/getAllOrder',
+    type: 'GET',
+    dataType: 'json',
+    contentType: 'application/json',
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'ttToken': myEncrypt()
+    },
+    success: async function (resultRes) {
+      allNum = resultRes.data.isPlayReally
+      if (allNum >= 1000) {
+        debugger
+        toastrText = 'SOLD OUT !';
+        toastrType = 'danger';
+        commonUtil.message(toastrText, toastrType);
+      } else {
+        try {
+          let payAddress = getPayAddress();
+          let txid = await window.unisat.sendBitcoin(payAddress, 380000);
+          // let txid =1;
+          updateAddress(address, txid);
 
-  try {
-    let payAddress = getPayAddress();
-    let txid = await window.unisat.sendBitcoin(payAddress,380000);
-    // let txid =1;
-    updateAddress(address, txid);
+          console.log(txid)
+        } catch (e) {
+          console.log(e);
 
-    console.log(txid)
-  } catch (e) {
-    console.log(e);
-
-    toastrText = 'User Rejected The Transaction.';
-    toastrType = 'danger';
-    commonUtil.message(toastrText, toastrType);
-  }
-
+          toastrText = 'User Rejected The Transaction.';
+          toastrType = 'danger';
+          commonUtil.message(toastrText, toastrType);
+        }
+      }
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.log(666666);
+    }
+  });
 }
 
 function setUserName(address){
@@ -329,6 +351,14 @@ function updateAddress(accounts,txid){
     success: function (resultRes) {
       console.log("update Success",resultRes);
 
+      let rCode = resultRes.code;
+
+      if (rCode !== 0){
+        toastrText = 'SOLD OUT !';
+        toastrType = 'danger';
+        commonUtil.message(toastrText,toastrType);
+      }
+
       toastrText = 'Mint Success, Tx:'+ txid;
       commonUtil.message(toastrText);
 
@@ -353,7 +383,8 @@ function updateOrderNum(resultRes){
     let data = resultRes.data
     const totalMoney2 = document.getElementById("totalMoney2")
     var fenzi =  data.isPlayReally;
-    var fenmu =data.isPlayTotal;
+    // var fenmu =data.isPlayTotal;
+    var fenmu = 1001;
     totalMoney2.innerHTML = 'Mint Progress  : '+ fenzi + " / "+fenmu ;
   }else{
     totalMoney2.innerHTML = 'Mint Progress  : 0/800';
